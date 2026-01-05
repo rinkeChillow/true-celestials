@@ -1,0 +1,37 @@
+{
+	"schemaVersion": 1,
+	"id": "truecelestials",
+	"version": "${version}",
+	"name": "True Celestials",
+	"description": "fixes how the sun and mood renders in the game for better texturepack compatibility",
+	"authors": [
+		"rinke_"
+	],
+	"contact": {
+		"homepage": "",
+		"sources": ""
+	},
+	"license": "MIT",
+	"icon": "assets/truecelestials/bruh.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.rinke_.truecelestials.TrueCelestials"
+		],
+		"fabric-datagen": [
+			"com.rinke_.truecelestials.TrueCelestialsDataGenerator"
+		],
+        "client": [
+          "com.rinke_.truecelestials.TrueCelestialsClient"
+        ]
+	},
+	"mixins": [
+		"truecelestials.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.18.4",
+		"minecraft": "~1.21",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}
