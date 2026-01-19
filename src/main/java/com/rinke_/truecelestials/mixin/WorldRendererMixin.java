@@ -2,6 +2,8 @@ package com.rinke_.truecelestials.mixin;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.WorldRenderer;
+import net.minecraft.client.render.Camera;
+import net.minecraft.client.render.DimensionEffects;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -14,23 +16,17 @@ import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 @Mixin(WorldRenderer.class)
 public abstract class WorldRendererMixin {
 
-    // === persistent state ===
     @Unique private static boolean flipped = false;
-    @Unique private static float lastSkyAngle = 0.0F;
-
-    // === per-frame captured tickDelta ===
     @Unique private static float currentTickDelta = 0.0F;
 
-    /**
-     * Capture tickDelta once per renderSky call.
-     * This runs exactly once per frame.
-     */
+    /*CAPTURE TICK DELTA */
+
     @Inject(method = "renderSky", at = @At("HEAD"))
     private void captureTickDelta(
             Matrix4f matrix4f,
             Matrix4f projectionMatrix,
             float tickDelta,
-            net.minecraft.client.render.Camera camera,
+            Camera camera,
             boolean thickFog,
             Runnable fogCallback,
             CallbackInfo ci
@@ -38,46 +34,49 @@ public abstract class WorldRendererMixin {
         currentTickDelta = tickDelta;
     }
 
+    /*ORIENTATION ENFORCEMENT */
+
     @Unique
-    private static void updateFlipState() {
+    private static void enforceFlipState() {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.world == null) return;
 
+        // Overworld only
+        if (client.world.getDimensionEffects().getSkyType() != DimensionEffects.SkyType.NORMAL) {
+            flipped = false;
+            return;
+        }
+
         float skyAngle = client.world.getSkyAngle(currentTickDelta);
 
-        // Midday (sun at zenith)
-        if (lastSkyAngle < 0.50F && skyAngle >= 0.50F) {
-            flipped = !flipped;
-        }
+        //orientation rule
+        boolean shouldBeFlipped = skyAngle >= 0.50F;
 
-        // Midnight
-        if (lastSkyAngle < 0.99F && skyAngle >= 0.99F) {
-            flipped = !flipped;
-        }
-
-        lastSkyAngle = skyAngle;
+        flipped = shouldBeFlipped;
     }
 
-    /**
-     * Flip UVs of sun & moon quads ONLY.
-     */
+    /*SUN + MOON UV FLIP*/
+
     @ModifyArgs(
             method = "renderSky",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/render/VertexConsumer;texture(FF)Lnet/minecraft/client/render/VertexConsumer;"
+                    target = "Lnet/minecraft/client/render/BufferBuilder;vertex(Lorg/joml/Matrix4f;FFF)Lnet/minecraft/client/render/VertexConsumer;"
             )
     )
-    private void flipCelestialUVs(Args args) {
-        updateFlipState();
-
+    private void flipSunAndMoonGeometry(Args args) {
+        enforceFlipState();
         if (!flipped) return;
 
-        float u = args.get(0);
-        float v = args.get(1);
+        float x = args.get(1);
+        float y = args.get(2);
+        float z = args.get(3);
 
-        // 180° rotation around quad center
-        args.set(0, 1.0F - u);
-        args.set(1, 1.0F - v);
+        if (y == 100.0F || y == -100.0F) {
+            args.set(1, -x); // flip X
+            args.set(3, -z); // flip Z
+        }
     }
 }
+
+// if you are reading this , most of this code was made with the assistance of ai , i dont claim that i made the whole thing myself
