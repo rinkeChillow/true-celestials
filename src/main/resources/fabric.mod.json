@@ -23,6 +23,9 @@
 		],
         "client": [
           "com.rinke_.truecelestials.TrueCelestialsClient"
+        ],
+        "modmenu": [
+          "com.rinke_.truecelestials.compat.ModMenuCompat"
         ]
 	},
 	"mixins": [

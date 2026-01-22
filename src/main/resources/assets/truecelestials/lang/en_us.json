@@ -1,0 +1,6 @@
+{
+  "text.autoconfig.truecelestials.title": "True Celestials",
+
+  "text.autoconfig.truecelestials.option.enableMod": "Enable True Celestials",
+  "text.autoconfig.truecelestials.option.enableMod.@Tooltip": "Enable or disable all celestial flipping logic"
+}

@@ -1,5 +1,6 @@
 package com.rinke_.truecelestials.mixin;
 
+import com.rinke_.truecelestials.config.TrueCelestialsConfig;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.render.Camera;
@@ -41,6 +42,12 @@ public abstract class WorldRendererMixin {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.world == null) return;
 
+        // mod config
+        if (!TrueCelestialsConfig.get().enableMod) {
+            flipped = false;
+            return;
+        }
+
         // Overworld only
         if (client.world.getDimensionEffects().getSkyType() != DimensionEffects.SkyType.NORMAL) {
             flipped = false;
@@ -79,4 +86,4 @@ public abstract class WorldRendererMixin {
     }
 }
 
-// if you are reading this , most of this code was made with the assistance of ai , i dont claim that i made the whole thing myself
+// if you are reading this , most of this code was made with the assistance of AI , I don't claim that I made the whole thing myself
